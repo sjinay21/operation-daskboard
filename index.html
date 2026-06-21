@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Operations Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SVG Icons are inline to avoid external dependencies -->
+    <style>
+        /* CSS Variables */
+        :root {
+            /* Light Theme */
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --surface-hover: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --primary-accent: #2563eb;
+            --primary-accent-hover: #1d4ed8;
+
+            --status-healthy: #10b981;
+            --status-healthy-bg: #d1fae5;
+            --status-warning: #f59e0b;
+            --status-warning-bg: #fef3c7;
+            --status-alarm: #ef4444;
+            --status-alarm-bg: #fee2e2;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            --transition: all 0.2s ease-in-out;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --surface-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --primary-accent: #3b82f6;
+            --primary-accent-hover: #60a5fa;
+
+            --status-healthy: #34d399;
+            --status-healthy-bg: rgba(16, 185, 129, 0.15);
+            --status-warning: #fbbf24;
+            --status-warning-bg: rgba(245, 158, 11, 0.15);
+            --status-alarm: #f87171;
+            --status-alarm-bg: rgba(239, 68, 68, 0.15);
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Reset & Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header-title-container h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-title-container p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .last-refreshed {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        /* ============================================================
+           OLD IMPLEMENTATION
+           Reason: UI/UX Refinement - Added button scale and elevation
+           Date: 2026-06-21
+        ============================================================ */
+        /*
+        .btn:hover {
+            background-color: var(--surface-hover);
+        }
+        */
+        .btn:hover {
+            background-color: var(--surface-hover);
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        .spinning-icon {
+            animation: spin 1s linear infinite;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-primary {
+            background-color: var(--primary-accent);
+            color: white;
+            border-color: var(--primary-accent);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-accent-hover);
+            border-color: var(--primary-accent-hover);
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        /* Main Layout */
+        .app-main {
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .summary-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        /* ============================================================
+           OLD IMPLEMENTATION
+           Reason: UI/UX Refinement - Improved summary card elevation
+           Date: 2026-06-21
+        ============================================================ */
+        /*
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        */
+        .summary-card { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Content Layout */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* List Section */
+        .list-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            background-color: var(--surface-color);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper svg {
+            position: absolute;
+            left: 0.75rem;
+            color: var(--text-secondary);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        input {
+            padding-left: 2.25rem;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Asset List */
+        .asset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .asset-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           OLD IMPLEMENTATION
+           Reason: UI/UX Refinement - Improved asset card hover scaling
+           Date: 2026-06-21
+        ============================================================ */
+        /*
+        .asset-card:hover {
+            border-color: var(--primary-accent);
+            background-color: var(--surface-hover);
+        }
+        */
+        .asset-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .asset-card:hover {
+            border-color: var(--primary-accent);
+            background-color: var(--surface-hover);
+            transform: translateY(-2px) scale(1.005);
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+        }
+
+        .asset-card.selected {
+            border-color: var(--primary-accent);
+            background-color: var(--surface-hover);
+            box-shadow: 0 0 0 1px var(--primary-accent);
+        }
+
+        .asset-card.selected::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--primary-accent);
+        }
+
+        .asset-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .asset-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .asset-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge.healthy {
+            background-color: var(--status-healthy-bg);
+            color: var(--status-healthy);
+        }
+
+        .badge.warning {
+            background-color: var(--status-warning-bg);
+            color: var(--status-warning);
+        }
+
+        .badge.alarm {
+            background-color: var(--status-alarm-bg);
+            color: var(--status-alarm);
+        }
+
+        .health-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .health-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .health-bar-bg {
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: sticky;
+            top: 6rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-title h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .data-point {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .data-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .data-value {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        .data-unit {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .recommendation-box {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .recommendation-box svg {
+            flex-shrink: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        .trend-improving { color: var(--status-healthy); }
+        .trend-declining { color: var(--status-alarm); }
+        .trend-stable { color: var(--text-secondary); }
+        */
+        .trend-improving { color: #10b981; background-color: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; }
+        .trend-declining { color: #ef4444; background-color: rgba(239, 68, 68, 0.1); padding: 0.25rem 0.5rem; }
+        .trend-stable { color: #64748b; background-color: rgba(100, 116, 139, 0.1); padding: 0.25rem 0.5rem; }
+        [data-theme="dark"] .trend-improving { color: #34d399; }
+        [data-theme="dark"] .trend-declining { color: #f87171; }
+        [data-theme="dark"] .trend-stable { color: #94a3b8; }
+        }
+
+        /* Empty States */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            background-color: var(--surface-color);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+        }
+
+        .empty-state svg {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .spinning-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        .placeholder-detail {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .placeholder-detail svg {
+            width: 4rem;
+            height: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.2;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .asset-card {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .app-main {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body data-theme="dark">
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <!-- ============================================================
+             OLD IMPLEMENTATION
+             Reason: UI/UX Refinement - Premium Logo SVG and typography
+             Date: 2026-06-21
+        ============================================================ 
+        <div class="header-title-container">
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-accent)">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                Operations Dashboard
+            </h1>
+            <p>Industrial Asset Monitoring & Diagnostics</p>
+        </div>
+        -->
+        <div class="header-title-container">
+            <h1 style="letter-spacing: -0.025em;">
+                <div style="background: var(--primary-accent); padding: 0.35rem; border-radius: 8px; display: flex;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </div>
+                Operations Dashboard
+            </h1>
+            <p style="font-weight: 500; opacity: 0.8;">Industrial Asset Monitoring & Diagnostics</p>
+        </div>
+        <div class="header-actions">
+            <!-- ============================================================
+                 OLD IMPLEMENTATION
+                 Reason: UI/UX Refinement - Premium Clock SVG and Theme Toggle
+                 Date: 2026-06-21
+            ============================================================ 
+            <span class="last-refreshed" id="lastRefreshedLabel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Last Refreshed: <span id="lastRefreshedTime">Just now</span>
+            </span>
+            <button class="btn btn-icon" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            -->
+            <span class="last-refreshed" id="lastRefreshedLabel" style="background-color: var(--surface-hover); padding: 0.35rem 0.75rem; border-radius: 999px; font-weight: 500;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="lastRefreshedTime">Just now</span>
+            </span>
+            <button class="btn btn-icon" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <!-- ============================================================
+                 OLD IMPLEMENTATION
+                 Reason: UI/UX Refinement - Premium Refresh SVG and button style
+                 Date: 2026-06-21
+            ============================================================ 
+            <button class="btn btn-primary" id="refreshBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                </svg>
+                Refresh Data
+            </button>
+            -->
+            <button class="btn btn-primary" id="refreshBtn" style="box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                Refresh Data
+            </button>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <!-- Summary Cards -->
+        <section class="summary-grid" id="summaryGrid">
+            <!-- Cards injected via JS -->
+        </section>
+
+        <!-- Main Content Layout -->
+        <div class="content-layout">
+            <!-- List Section -->
+            <div class="list-section">
+                <div class="toolbar">
+                    <div class="input-group">
+                        <label for="searchInput">Search Assets</label>
+                        <div class="input-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="Search by name or ID...">
+                        </div>
+                    </div>
+                    <div class="input-group" style="flex: 0.5;">
+                        <label for="severityFilter">Severity</label>
+                        <select id="severityFilter">
+                            <option value="All">All</option>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 0.5;">
+                        <label for="healthSort">Sort By Health</label>
+                        <select id="healthSort">
+                            <option value="none">Default</option>
+                            <option value="asc">Low to High</option>
+                            <option value="desc">High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="asset-list" id="assetList">
+                    <!-- List injected via JS -->
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <aside class="detail-panel" id="detailPanel">
+                <!-- Details injected via JS -->
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * MINI OPERATIONS DASHBOARD
+         * Original Dataset Provided by Assignment.
+         * Note: The dataset remains exactly as requested. No extra fields were added.
+         */
+        const assets = [
+            { id: "FD_FAN_01", name: "FD Fan 01", area: "Boiler House", health: 86, status: "Healthy", severity: "LOW", temperature: 68, vibration: 2.1, pressure: 1.8, runtimeHours: 1240, lastUpdated: "2026-06-19 08:30" },
+            { id: "CW_PUMP_02", name: "Cooling Water Pump 02", area: "Utility", health: 62, status: "Watch", severity: "MEDIUM", temperature: 74, vibration: 4.8, pressure: 2.4, runtimeHours: 980, lastUpdated: "2026-06-19 08:25" },
+            { id: "AIR_COMP_03", name: "Air Compressor 03", area: "Compressor Room", health: 38, status: "Alarm", severity: "HIGH", temperature: 91, vibration: 7.2, pressure: 3.1, runtimeHours: 2100, lastUpdated: "2026-06-19 08:10" },
+            { id: "BOILER_FEED_04", name: "Boiler Feed Pump 04", area: "Boiler House", health: 71, status: "Watch", severity: "MEDIUM", temperature: 79, vibration: 3.9, pressure: 5.6, runtimeHours: 1685, lastUpdated: "2026-06-19 08:05" },
+            { id: "CHILLER_05", name: "Process Chiller 05", area: "Cooling Plant", health: 92, status: "Healthy", severity: "LOW", temperature: 54, vibration: 1.5, pressure: 2.1, runtimeHours: 740, lastUpdated: "2026-06-19 08:40" },
+            { id: "CONVEYOR_06", name: "Raw Material Conveyor 06", area: "Material Handling", health: 47, status: "Alarm", severity: "HIGH", temperature: 83, vibration: 6.5, pressure: 1.2, runtimeHours: 1940, lastUpdated: "2026-06-19 07:55" },
+            { id: "ID_FAN_07", name: "ID Fan 07", area: "Boiler House", health: 78, status: "Healthy", severity: "LOW", temperature: 72, vibration: 2.9, pressure: 1.9, runtimeHours: 1325, lastUpdated: "2026-06-19 08:35" },
+            { id: "RO_PUMP_08", name: "RO Feed Pump 08", area: "Water Treatment", health: 55, status: "Watch", severity: "MEDIUM", temperature: 76, vibration: 5.1, pressure: 4.8, runtimeHours: 1110, lastUpdated: "2026-06-19 08:15" },
+            { id: "GENERATOR_09", name: "Backup Generator 09", area: "Power House", health: 89, status: "Healthy", severity: "LOW", temperature: 64, vibration: 2.0, pressure: 2.7, runtimeHours: 510, lastUpdated: "2026-06-19 08:45" },
+            { id: "PRESS_10", name: "Hydraulic Press 10", area: "Production Line", health: 33, status: "Alarm", severity: "HIGH", temperature: 95, vibration: 7.8, pressure: 6.2, runtimeHours: 2250, lastUpdated: "2026-06-19 07:50" },
+            { id: "MIXER_11", name: "Batch Mixer 11", area: "Production Line", health: 68, status: "Watch", severity: "MEDIUM", temperature: 81, vibration: 4.1, pressure: 2.9, runtimeHours: 1460, lastUpdated: "2026-06-19 08:20" },
+            { id: "SCRUBBER_12", name: "Emission Scrubber 12", area: "Environment Control", health: 84, status: "Healthy", severity: "LOW", temperature: 69, vibration: 2.4, pressure: 3.3, runtimeHours: 890, lastUpdated: "2026-06-19 08:32" }
+        ];
+
+        /**
+         * DYNAMIC ENHANCEMENTS STATE
+         * We maintain trends in a separate map to preserve the original dataset as requested.
+         */
+        const trendMap = {
+            "FD_FAN_01": "Stable", "CW_PUMP_02": "Declining", "AIR_COMP_03": "Declining",
+            "BOILER_FEED_04": "Improving", "CHILLER_05": "Stable", "CONVEYOR_06": "Declining",
+            "ID_FAN_07": "Improving", "RO_PUMP_08": "Declining", "GENERATOR_09": "Stable",
+            "PRESS_10": "Stable", "MIXER_11": "Improving", "SCRUBBER_12": "Stable"
+        };
+
+        /**
+         * GLOBAL STATE
+         */
+        const state = {
+            allAssets: [...assets],
+            filteredAssets: [...assets],
+            searchQuery: '',
+            filterSeverity: 'All',
+            sortOrder: 'none',
+            selectedAssetId: localStorage.getItem('mod_selected_asset') || null,
+            theme: localStorage.getItem('mod_theme') || 'dark',
+            lastRefreshed: new Date()
+        };
+
+        /**
+         * DOM ELEMENTS
+         */
+        const elements = {
+            themeToggleBtn: document.getElementById('themeToggleBtn'),
+            themeIcon: document.getElementById('themeIcon'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            lastRefreshedTime: document.getElementById('lastRefreshedTime'),
+            searchInput: document.getElementById('searchInput'),
+            severityFilter: document.getElementById('severityFilter'),
+            healthSort: document.getElementById('healthSort'),
+            summaryGrid: document.getElementById('summaryGrid'),
+            assetList: document.getElementById('assetList'),
+            detailPanel: document.getElementById('detailPanel'),
+            loadingOverlay: document.getElementById('loadingOverlay')
+        };
+
+        /**
+         * HELPERS
+         */
+        const getStatusClass = (health) => {
+            if (health >= 75) return 'healthy';
+            if (health >= 50) return 'warning';
+            return 'alarm';
+        };
+
+        // ============================================================
+        // OLD IMPLEMENTATION
+        // Reason: UI/UX Refinement - Premium SVG icons for recommendations and trends
+        // Date: 2026-06-21
+        // ============================================================
+        /*
+        const getRecommendation = (health) => {
+            if (health >= 75) return { text: "Asset is operating normally.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>` };
+            if (health >= 50) return { text: "Monitor this asset closely.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>` };
+            return { text: "Immediate inspection recommended.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>` };
+        };
+
+        const getTrendIcon = (trend) => {
+            if (trend === "Improving") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`;
+            if (trend === "Declining") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`;
+            return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+        };
+        */
+        const getRecommendation = (health) => {
+            if (health >= 75) return { text: "Asset is operating normally.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>` };
+            if (health >= 50) return { text: "Monitor this asset closely.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>` };
+            return { text: "Immediate inspection recommended.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>` };
+        };
+
+        const getTrendIcon = (trend) => {
+            if (trend === "Improving") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>`;
+            if (trend === "Declining") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>`;
+            return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        };
+
+        const formatTime = (date) => {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
+
+        const safeVal = (val, unit = "") => val !== undefined && val !== null ? `${val}${unit}` : "N/A";
+
+        /**
+         * CORE LOGIC
+         */
+        const computeSummaries = (data) => {
+            const total = data.length;
+            let healthy = 0, warning = 0, alarm = 0, healthSum = 0;
+
+            data.forEach(asset => {
+                if (asset.health >= 75) healthy++;
+                else if (asset.health >= 50) warning++;
+                else alarm++;
+                healthSum += asset.health;
+            });
+
+            const avgHealth = total > 0 ? Math.round(healthSum / total) : 0;
+            return { total, healthy, warning, alarm, avgHealth };
+        };
+
+        const applyFiltersAndSort = () => {
+            let result = [...state.allAssets];
+
+            // 1. Search Filter
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                result = result.filter(a =>
+                    a.name.toLowerCase().includes(q) ||
+                    a.id.toLowerCase().includes(q)
+                );
+            }
+
+            // 2. Severity Filter
+            if (state.filterSeverity !== 'All') {
+                result = result.filter(a => a.severity.toUpperCase() === state.filterSeverity.toUpperCase());
+            }
+
+            // 3. Sort
+            if (state.sortOrder === 'asc') {
+                result.sort((a, b) => a.health - b.health);
+            } else if (state.sortOrder === 'desc') {
+                result.sort((a, b) => b.health - a.health);
+            }
+
+            state.filteredAssets = result;
+            renderApp();
+        };
+
+        /**
+         * RENDERING
+         */
+        // ============================================================
+        // OLD IMPLEMENTATION
+        // Reason: UI/UX Refinement - Premium SVGs, better card spacing/typography
+        // Date: 2026-06-21
+        // ============================================================
+        /*
+        const renderSummaryCards = () => {
+            const stats = computeSummaries(state.allAssets);
+
+            elements.summaryGrid.innerHTML = `
+                <div class="summary-card">
+                    <div class="summary-title">Total Assets <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                    <div class="summary-value">${stats.total}</div>
+                </div>
+                <div class="summary-card" style="border-bottom: 3px solid var(--status-healthy)">
+                    <div class="summary-title">Healthy <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-healthy)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                    <div class="summary-value">${stats.healthy}</div>
+                </div>
+                <div class="summary-card" style="border-bottom: 3px solid var(--status-warning)">
+                    <div class="summary-title">Warning <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                    <div class="summary-value">${stats.warning}</div>
+                </div>
+                <div class="summary-card" style="border-bottom: 3px solid var(--status-alarm)">
+                    <div class="summary-title">Alarm <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-alarm)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                    <div class="summary-value">${stats.alarm}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Avg Health <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                    <div class="summary-value">${stats.avgHealth}%</div>
+                </div>
+            `;
+        };
+        */
+        const renderSummaryCards = () => {
+            const stats = computeSummaries(state.allAssets); 
+            
+            elements.summaryGrid.innerHTML = `
+                <div class="summary-card fade-in" style="border-left: 4px solid var(--primary-accent)">
+                    <div class="summary-title">Total Assets <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+                    <div class="summary-value">${stats.total}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Monitored inventory</div>
+                </div>
+                <div class="summary-card fade-in" style="border-left: 4px solid var(--status-healthy)">
+                    <div class="summary-title">Healthy <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-healthy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                    <div class="summary-value">${stats.healthy}</div>
+                    <div style="font-size: 0.75rem; color: var(--status-healthy); margin-top: 0.25rem;">Operating normally</div>
+                </div>
+                <div class="summary-card fade-in" style="border-left: 4px solid var(--status-warning)">
+                    <div class="summary-title">Warning <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                    <div class="summary-value">${stats.warning}</div>
+                    <div style="font-size: 0.75rem; color: var(--status-warning); margin-top: 0.25rem;">Requires attention</div>
+                </div>
+                <div class="summary-card fade-in" style="border-left: 4px solid var(--status-alarm)">
+                    <div class="summary-title">Alarm <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-alarm)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                    <div class="summary-value">${stats.alarm}</div>
+                    <div style="font-size: 0.75rem; color: var(--status-alarm); margin-top: 0.25rem;">Immediate action</div>
+                </div>
+                <div class="summary-card fade-in" style="border-left: 4px solid var(--text-secondary)">
+                    <div class="summary-title">Avg Health <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+                    <div class="summary-value">${stats.avgHealth}<span style="font-size: 1.25rem; font-weight: 600; margin-left: 0.25rem;">/ 100</span></div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Across all systems</div>
+                </div>
+            `;
+        };
+
+        // ============================================================
+        // OLD IMPLEMENTATION
+        // Reason: UI/UX Refinement - Better spacing, inline icons, hierarchy, empty state
+        // Date: 2026-06-21
+        // ============================================================
+        /*
+        const renderAssetList = () => {
+            if (state.filteredAssets.length === 0) {
+                elements.assetList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="input-wrapper">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="searchInput" placeholder="Search by name or ID..." style="padding-left: 2.5rem; border-radius: var(--radius-lg);">
+                        </div>
+                        <h3>No Assets Found</h3>
+                        <p>No assets match the current search or filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            state.filteredAssets.forEach(asset => {
+                const statusClass = getStatusClass(asset.health);
+                const trend = trendMap[asset.id] || "Stable";
+                const isSelected = state.selectedAssetId === asset.id;
+
+                const card = document.createElement('div');
+                card.className = \`asset-card \${isSelected ? 'selected' : ''}\`;
+                card.onclick = () => selectAsset(asset.id);
+
+                card.innerHTML = \`
+                    <div class="asset-info">
+                        <div class="asset-name">\${asset.name}</div>
+                        <div class="asset-meta">
+                            <span>\${asset.id}</span> • <span>\${asset.area}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="health-bar-container">
+                        <div class="health-label">
+                            <span>Health</span>
+                            <span style="color: var(--status-\${statusClass})">\${asset.health}%</span>
+                        </div>
+                        <div class="health-bar-bg">
+                            <div class="health-bar-fill" style="width: \${asset.health}%; background-color: var(--status-\${statusClass})"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <span class="badge \${statusClass}">\${asset.status}</span>
+                        <div class="trend-indicator trend-\${trend.toLowerCase()}">
+                            \${getTrendIcon(trend)} \${trend}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end; text-align: right;">
+                        <span class="badge" style="background-color: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--border-color);">
+                            \${asset.severity} SEV
+                        </span>
+                        <span class="asset-meta">\${asset.lastUpdated}</span>
+                    </div>
+                \`;
+                fragment.appendChild(card);
+            });
+
+            elements.assetList.innerHTML = '';
+            elements.assetList.appendChild(fragment);
+        };
+        */
+        const renderAssetList = () => {
+            if (state.filteredAssets.length === 0) {
+                elements.assetList.innerHTML = `
+                    <div class="empty-state fade-in" style="padding: 6rem 2rem; border: 2px dashed var(--border-color); background: transparent;">
+                        <div style="background-color: var(--surface-hover); padding: 1.5rem; border-radius: 50%; margin-bottom: 1.5rem;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><path d="M11 8v6"></path><path d="M8 11h6"></path></svg>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">No Assets Found</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 300px; line-height: 1.5;">Try adjusting your search query or filter criteria to find what you're looking for.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            state.filteredAssets.forEach(asset => {
+                const statusClass = getStatusClass(asset.health);
+                const trend = trendMap[asset.id] || "Stable";
+                const isSelected = state.selectedAssetId === asset.id;
+
+                const card = document.createElement('div');
+                card.className = `asset-card ${isSelected ? 'selected' : ''}`;
+                card.onclick = () => selectAsset(asset.id);
+
+                card.innerHTML = `
+                    <div class="asset-info">
+                        <div class="asset-name" style="display: flex; align-items: center; gap: 0.5rem;">
+                            ${asset.name}
+                        </div>
+                        <div class="asset-meta" style="margin-top: 0.25rem;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22l5-5"></path><path d="M2 2l5 5"></path><path d="M22 2l-5 5"></path><path d="M22 22l-5-5"></path><circle cx="12" cy="12" r="2"></circle></svg>
+                            <span>${asset.id}</span> 
+                            <span style="color: var(--border-color);">|</span> 
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span>${asset.area}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="health-bar-container" style="padding-right: 1rem;">
+                        <div class="health-label">
+                            <span>Health Score</span>
+                            <span style="color: var(--status-${statusClass}); font-weight: 700;">${asset.health}%</span>
+                        </div>
+                        <div class="health-bar-bg" style="height: 8px;">
+                            <div class="health-bar-fill" style="width: ${asset.health}%; background-color: var(--status-${statusClass}); box-shadow: 0 0 8px var(--status-${statusClass}); border-radius: 999px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+                        <span class="badge ${statusClass}" style="font-size: 0.7rem;">${asset.status}</span>
+                        <div class="trend-indicator trend-${trend.toLowerCase()}">
+                            ${getTrendIcon(trend)} <span style="margin-left: 2px;">${trend}</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end; text-align: right;">
+                        <span class="badge" style="background-color: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--border-color); letter-spacing: 0.1em; font-size: 0.65rem;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            ${asset.severity} SEV
+                        </span>
+                        <span class="asset-meta">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ${asset.lastUpdated}
+                        </span>
+                    </div>
+                `;
+                fragment.appendChild(card);
+            });
+
+            elements.assetList.innerHTML = '';
+            elements.assetList.appendChild(fragment);
+        };
+
+        // ============================================================
+        // OLD IMPLEMENTATION
+        // Reason: UI/UX Refinement - More prominent health score, better grid, icons, placeholder
+        // Date: 2026-06-21
+        // ============================================================
+        /*
+        const renderDetailPanel = () => {
+            if (!state.selectedAssetId) {
+                elements.detailPanel.innerHTML = `
+                    <div class="placeholder-detail">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <h3>Select an Asset</h3>
+                        <p>Click on an asset from the list to view telemetry and diagnostics.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const asset = state.allAssets.find(a => a.id === state.selectedAssetId);
+
+            if (!asset) {
+                state.selectedAssetId = null;
+                renderDetailPanel();
+                return;
+            }
+
+            const statusClass = getStatusClass(asset.health);
+            const rec = getRecommendation(asset.health);
+
+            elements.detailPanel.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-title">
+                        <h2>\${safeVal(asset.name)}</h2>
+                        <span style="font-size: 0.875rem; color: var(--text-secondary);">\${safeVal(asset.id)} • \${safeVal(asset.area)}</span>
+                    </div>
+                    <span class="badge \${statusClass}" style="font-size: 0.875rem;">\${safeVal(asset.status)}</span>
+                </div>
+
+                <div class="health-bar-container" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div class="health-label" style="font-size: 1rem; margin-bottom: 0.5rem;">
+                        <span>System Health Score</span>
+                        <span style="color: var(--status-\${statusClass}); font-weight: 700;">\${safeVal(asset.health)} / 100</span>
+                    </div>
+                    <div class="health-bar-bg" style="height: 8px;">
+                        <div class="health-bar-fill" style="width: \${asset.health}%; background-color: var(--status-\${statusClass})"></div>
+                    </div>
+                </div>
+
+                <div class="recommendation-box \${statusClass}" style="background-color: var(--status-\${statusClass}-bg); color: var(--status-\${statusClass}); border: 1px solid var(--status-\${statusClass});">
+                    \${rec.icon}
+                    <span><strong>Diagnostic:</strong> \${rec.text}</span>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="data-point">
+                        <span class="data-label">Severity Level</span>
+                        <span class="data-value">\${safeVal(asset.severity)}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="data-label">Temperature</span>
+                        <span class="data-value">\${safeVal(asset.temperature)} <span class="data-unit">°C</span></span>
+                    </div>
+                    <div class="data-point">
+                        <span class="data-label">Vibration</span>
+                        <span class="data-value">\${safeVal(asset.vibration)} <span class="data-unit">mm/s</span></span>
+                    </div>
+                    <div class="data-point">
+                        <span class="data-label">Pressure</span>
+                        <span class="data-value">\${safeVal(asset.pressure)} <span class="data-unit">PSI</span></span>
+                    </div>
+                    <div class="data-point">
+                        <span class="data-label">Runtime</span>
+                        <span class="data-value">\${safeVal(asset.runtimeHours)} <span class="data-unit">hrs</span></span>
+                    </div>
+                    <div class="data-point">
+                        <span class="data-label">Last Updated</span>
+                        <span class="data-value" style="font-size: 0.875rem; font-weight: 500;">\${safeVal(asset.lastUpdated)}</span>
+                    </div>
+                </div>
+            `;
+        };
+        */
+        const renderDetailPanel = () => {
+            if (!state.selectedAssetId) {
+                elements.detailPanel.innerHTML = `
+                    <div class="placeholder-detail fade-in">
+                        <div style="background-color: var(--surface-hover); padding: 1.5rem; border-radius: 50%; margin-bottom: 1.5rem;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Select an Asset</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 250px; line-height: 1.6;">Click on any asset from the list to view its real-time telemetry and diagnostics.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const asset = state.allAssets.find(a => a.id === state.selectedAssetId);
+
+            if (!asset) {
+                state.selectedAssetId = null;
+                renderDetailPanel();
+                return;
+            }
+
+            const statusClass = getStatusClass(asset.health);
+            const rec = getRecommendation(asset.health);
+
+            elements.detailPanel.innerHTML = `
+                <div class="detail-header fade-in">
+                    <div class="detail-title">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.025em;">${safeVal(asset.name)}</h2>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="display: flex; align-items: center; gap: 0.25rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 22l5-5"></path><path d="M2 2l5 5"></path><path d="M22 2l-5 5"></path><path d="M22 22l-5-5"></path><circle cx="12" cy="12" r="2"></circle></svg> ${safeVal(asset.id)}</span>
+                            <span>|</span>
+                            <span style="display: flex; align-items: center; gap: 0.25rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${safeVal(asset.area)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fade-in" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: linear-gradient(145deg, var(--surface-color), var(--surface-hover)); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.02);">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">System Health</span>
+                        <span class="badge ${statusClass}" style="font-size: 0.875rem; width: fit-content; padding: 0.35rem 0.75rem;">${safeVal(asset.status)}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--status-${statusClass}); line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            ${safeVal(asset.health)}<span style="font-size: 1.25rem; color: var(--text-secondary); font-weight: 600;">/100</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="health-bar-container fade-in">
+                    <div class="health-bar-bg" style="height: 10px; background-color: var(--surface-hover);">
+                        <div class="health-bar-fill" style="width: ${asset.health}%; background-color: var(--status-${statusClass}); box-shadow: 0 0 10px var(--status-${statusClass}); border-radius: 999px;"></div>
+                    </div>
+                </div>
+
+                <div class="recommendation-box ${statusClass} fade-in" style="background-color: var(--status-${statusClass}-bg); color: var(--status-${statusClass}); border: 1px solid var(--status-${statusClass}); align-items: center; padding: 1.25rem;">
+                    ${rec.icon}
+                    <span style="font-size: 0.95rem;"><strong>Diagnostic:</strong> ${rec.text}</span>
+                </div>
+
+                <div class="detail-grid fade-in" style="margin-top: 0.5rem;">
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Severity</span>
+                        <span class="data-value" style="margin-top: 0.25rem;">${safeVal(asset.severity)}</span>
+                    </div>
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg> Temperature</span>
+                        <span class="data-value" style="margin-top: 0.25rem;">${safeVal(asset.temperature)} <span class="data-unit">°C</span></span>
+                    </div>
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Vibration</span>
+                        <span class="data-value" style="margin-top: 0.25rem;">${safeVal(asset.vibration)} <span class="data-unit">mm/s</span></span>
+                    </div>
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Pressure</span>
+                        <span class="data-value" style="margin-top: 0.25rem;">${safeVal(asset.pressure)} <span class="data-unit">PSI</span></span>
+                    </div>
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Runtime</span>
+                        <span class="data-value" style="margin-top: 0.25rem;">${safeVal(asset.runtimeHours)} <span class="data-unit">hrs</span></span>
+                    </div>
+                    <div class="data-point" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <span class="data-label" style="display: flex; align-items: center; gap: 0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Updated</span>
+                        <span class="data-value" style="font-size: 0.875rem; font-weight: 600; margin-top: 0.25rem;">${safeVal(asset.lastUpdated)}</span>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderApp = () => {
+            renderSummaryCards();
+            renderAssetList();
+            renderDetailPanel();
+        };
+
+        /**
+         * ACTIONS & HANDLERS
+         */
+        const selectAsset = (id) => {
+            state.selectedAssetId = id;
+            localStorage.setItem('mod_selected_asset', id);
+            renderAssetList();
+            renderDetailPanel();
+
+            if (window.innerWidth <= 1024) {
+                elements.detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        let searchTimeout;
+        const handleSearch = (e) => {
+            state.searchQuery = e.target.value;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFiltersAndSort();
+            }, 200);
+        };
+
+        const handleFilter = (e) => {
+            state.filterSeverity = e.target.value;
+            applyFiltersAndSort();
+        };
+
+        const handleSort = (e) => {
+            state.sortOrder = e.target.value;
+            applyFiltersAndSort();
+        };
+
+        const applyTheme = (theme) => {
+            document.body.setAttribute('data-theme', theme);
+            state.theme = theme;
+            localStorage.setItem('mod_theme', theme);
+
+            if (theme === 'dark') {
+                elements.themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            } else {
+                elements.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            }
+        };
+
+        const toggleTheme = () => {
+            applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+        };
+
+        const refreshData = () => {
+            elements.loadingOverlay.classList.add('active');
+            const refreshIcon = elements.refreshBtn.querySelector('svg');
+            if (refreshIcon) refreshIcon.classList.add('spinning-icon');
+            
+            setTimeout(() => {
+                state.lastRefreshed = new Date();
+                elements.lastRefreshedTime.textContent = formatTime(state.lastRefreshed);
+                applyFiltersAndSort();
+                elements.loadingOverlay.classList.remove('active');
+                if (refreshIcon) refreshIcon.classList.remove('spinning-icon');
+            }, 800);
+        };
+
+        /**
+         * INIT
+         */
+        const init = () => {
+            applyTheme(state.theme);
+            elements.lastRefreshedTime.textContent = formatTime(state.lastRefreshed);
+
+            // Bind listeners
+            elements.searchInput.addEventListener('input', handleSearch);
+            elements.severityFilter.addEventListener('change', handleFilter);
+            elements.healthSort.addEventListener('change', handleSort);
+            elements.themeToggleBtn.addEventListener('click', toggleTheme);
+            elements.refreshBtn.addEventListener('click', refreshData);
+
+            // Initial Render
+            applyFiltersAndSort();
+        };
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+
+    <!--
+    ================================================================================
+    README DOCUMENTATION
+    ================================================================================
+    
+    # Mini Operations Dashboard
+    
+    ## How to Run the Project
+    This project requires no build tools, dependencies, or local servers.
+    Simply open this \`index.html\` file in any modern web browser (Chrome, Edge, Firefox, Safari).
+    
+    ## Implemented Features
+    - **Header**: Contains Dashboard Title, Description, Theme Toggle, and a simulated Refresh mechanism.
+    - **Summary Cards**: Dynamically aggregates total counts, health statuses, and calculates average system health.
+    - **Asset List**: Renders all industrial assets with health bars, trend indicators, and formatted metrics.
+    - **Search/Filter/Sort**: Provides real-time composite filtering by Asset Name/ID, Severity dropdown filtering, and Health Score sorting.
+    - **Detail Panel**: Clicking an asset displays comprehensive telemetry and context-sensitive diagnostic recommendations.
+    - **Responsive Design**: Gracefully degrades to a stacked layout on mobile devices.
+    - **Empty States**: Professional fallback UI when no assets match search criteria.
+    
+    ## Optional Enhancements Included
+    1. **Dark/Light Theme Toggle**: Implemented using pure CSS variables and persisted in \`localStorage\`.
+    2. **State Persistence**: The last selected asset is remembered across page reloads using \`localStorage\`.
+    3. **Visual Health Bars**: Integrated directly into both the list and detail views for rapid visual assessment.
+    4. **Trend Indicators**: A separate data mapping handles performance trends (Improving, Stable, Declining) without mutating the original dataset.
+    5. **Graceful Handling of Missing Data**: Robust fallback wrappers ensure UI integrity if asset fields are ever missing or undefined.
+    
+    ## Assumptions & Architectural Decisions
+    - **Single File Structure**: In adherence to strict submission guidelines, all CSS and JS is tightly integrated within this single HTML file.
+    - **Dataset Preservation**: The provided dataset was retained verbatim. Extra features (like Trends) map to IDs instead of altering the raw dataset objects.
+    - **Refresh Simulation**: The refresh button creates a realistic 800ms loading overlay delay to simulate network latency while retaining search/sort states.
+    - **UI/UX Strategy**: Designed using a palette inspired by industrial control systems (deep slates, high-contrast statuses) to simulate production software used by companies like Siemens or Honeywell.
+    
+    ================================================================================
+    -->
+</body>
+
+</html>
