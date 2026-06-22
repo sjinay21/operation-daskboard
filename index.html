@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Operations Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SVG Icons are inline to avoid external dependencies -->
+
     <style>
-        /* CSS Variables */
         :root {
-            /* Light Theme */
+
             --bg-color: #f8fafc;
             --surface-color: #ffffff;
             --surface-hover: #f1f5f9;
@@ -56,7 +55,7 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
         }
 
-        /* Reset & Base */
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -74,7 +73,7 @@
             min-height: 100vh;
         }
 
-        /* Header */
+
         .app-header {
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
@@ -133,32 +132,34 @@
             transition: var(--transition);
         }
 
-        /* ============================================================
-           OLD IMPLEMENTATION
-           Reason: UI/UX Refinement - Added button scale and elevation
-           Date: 2026-06-21
-        ============================================================ */
-        /*
-        .btn:hover {
-            background-color: var(--surface-hover);
-        }
-        */
+
         .btn:hover {
             background-color: var(--surface-hover);
             transform: translateY(-1px);
         }
+
         .btn:active {
             transform: translateY(1px) scale(0.98);
         }
+
         .spinning-icon {
             animation: spin 1s linear infinite;
         }
+
         .fade-in {
             animation: fadeIn 0.4s ease-out;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .btn-primary {
@@ -177,7 +178,7 @@
             border-radius: 50%;
         }
 
-        /* Main Layout */
+
         .app-main {
             padding: 2rem;
             flex-grow: 1;
@@ -189,7 +190,7 @@
             width: 100%;
         }
 
-        /* Summary Cards */
+
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -208,18 +209,13 @@
             transition: var(--transition);
         }
 
-        /* ============================================================
-           OLD IMPLEMENTATION
-           Reason: UI/UX Refinement - Improved summary card elevation
-           Date: 2026-06-21
-        ============================================================ */
-        /*
-        .summary-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+
+        .summary-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        */
-        .summary-card { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
         .summary-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -239,7 +235,7 @@
             font-weight: 700;
         }
 
-        /* Content Layout */
+
         .content-layout {
             display: grid;
             grid-template-columns: 1fr 400px;
@@ -247,7 +243,7 @@
             align-items: start;
         }
 
-        /* List Section */
+
         .list-section {
             display: flex;
             flex-direction: column;
@@ -319,7 +315,7 @@
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
-        /* Asset List */
+
         .asset-list {
             display: flex;
             flex-direction: column;
@@ -341,18 +337,11 @@
             overflow: hidden;
         }
 
-        /* ============================================================
-           OLD IMPLEMENTATION
-           Reason: UI/UX Refinement - Improved asset card hover scaling
-           Date: 2026-06-21
-        ============================================================ */
-        /*
-        .asset-card:hover {
-            border-color: var(--primary-accent);
-            background-color: var(--surface-hover);
+
+        .asset-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        */
-        .asset-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
         .asset-card:hover {
             border-color: var(--primary-accent);
             background-color: var(--surface-hover);
@@ -450,7 +439,7 @@
             transition: width 0.5s ease-out;
         }
 
-        /* Detail Panel */
+
         .detail-panel {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -531,19 +520,39 @@
             gap: 0.25rem;
             font-size: 0.75rem;
             font-weight: 500;
-        .trend-improving { color: var(--status-healthy); }
-        .trend-declining { color: var(--status-alarm); }
-        .trend-stable { color: var(--text-secondary); }
-        */
-        .trend-improving { color: #10b981; background-color: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; }
-        .trend-declining { color: #ef4444; background-color: rgba(239, 68, 68, 0.1); padding: 0.25rem 0.5rem; }
-        .trend-stable { color: #64748b; background-color: rgba(100, 116, 139, 0.1); padding: 0.25rem 0.5rem; }
-        [data-theme="dark"] .trend-improving { color: #34d399; }
-        [data-theme="dark"] .trend-declining { color: #f87171; }
-        [data-theme="dark"] .trend-stable { color: #94a3b8; }
         }
 
-        /* Empty States */
+        .trend-improving {
+            color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.5rem;
+        }
+
+        .trend-declining {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            padding: 0.25rem 0.5rem;
+        }
+
+        .trend-stable {
+            color: #64748b;
+            background-color: rgba(100, 116, 139, 0.1);
+            padding: 0.25rem 0.5rem;
+        }
+
+        [data-theme="dark"] .trend-improving {
+            color: #34d399;
+        }
+
+        [data-theme="dark"] .trend-declining {
+            color: #f87171;
+        }
+
+        [data-theme="dark"] .trend-stable {
+            color: #94a3b8;
+        }
+
+
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -570,7 +579,7 @@
             margin-bottom: 0.5rem;
         }
 
-        /* Loading Overlay */
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -607,7 +616,7 @@
                 transform: rotate(360deg);
             }
         }
-        
+
         .spinning-icon {
             animation: spin 1s linear infinite;
         }
@@ -630,7 +639,7 @@
             opacity: 0.2;
         }
 
-        /* Responsive */
+
         @media (max-width: 1024px) {
             .content-layout {
                 grid-template-columns: 1fr;
@@ -666,69 +675,39 @@
     </style>
 </head>
 
-<!-- ============================================================
-   OLD IMPLEMENTATION
-   Reason: Reverted to light theme as default per user request
-   Date: 2026-06-22
-============================================================ 
-<body data-theme="dark">
--->
+
 <body data-theme="light">
 
-    <!-- Loading Overlay -->
+
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
 
-    <!-- Header -->
+
     <header class="app-header">
-        <!-- ============================================================
-             OLD IMPLEMENTATION
-             Reason: UI/UX Refinement - Premium Logo SVG and typography
-             Date: 2026-06-21
-        ============================================================ 
-        <div class="header-title-container">
-            <h1>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-accent)">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-                Operations Dashboard
-            </h1>
-            <p>Industrial Asset Monitoring & Diagnostics</p>
-        </div>
-        -->
+
         <div class="header-title-container">
             <h1 style="letter-spacing: -0.025em;">
                 <div style="background: var(--primary-accent); padding: 0.35rem; border-radius: 8px; display: flex;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
                 </div>
                 Operations Dashboard
             </h1>
             <p style="font-weight: 500; opacity: 0.8;">Industrial Asset Monitoring & Diagnostics</p>
         </div>
         <div class="header-actions">
-            <!-- ============================================================
-                 OLD IMPLEMENTATION
-                 Reason: UI/UX Refinement - Premium Clock SVG and Theme Toggle
-                 Date: 2026-06-21
-            ============================================================ 
-            <span class="last-refreshed" id="lastRefreshedLabel">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
+
+            <span class="last-refreshed" id="lastRefreshedLabel"
+                style="background-color: var(--surface-hover); padding: 0.35rem 0.75rem; border-radius: 999px; font-weight: 500;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Last Refreshed: <span id="lastRefreshedTime">Just now</span>
-            </span>
-            <button class="btn btn-icon" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-            </button>
-            -->
-            <span class="last-refreshed" id="lastRefreshedLabel" style="background-color: var(--surface-hover); padding: 0.35rem 0.75rem; border-radius: 999px; font-weight: 500;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 <span id="lastRefreshedTime">Just now</span>
             </span>
             <button class="btn btn-icon" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
@@ -737,36 +716,29 @@
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                 </svg>
             </button>
-            <!-- ============================================================
-                 OLD IMPLEMENTATION
-                 Reason: UI/UX Refinement - Premium Refresh SVG and button style
-                 Date: 2026-06-21
-            ============================================================ 
-            <button class="btn btn-primary" id="refreshBtn">
+
+            <button class="btn btn-primary" id="refreshBtn" style="box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" />
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                    <path d="M16 21h5v-5"></path>
                 </svg>
-                Refresh Data
-            </button>
-            -->
-            <button class="btn btn-primary" id="refreshBtn" style="box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
                 Refresh Data
             </button>
         </div>
     </header>
 
     <main class="app-main">
-        <!-- Summary Cards -->
+
         <section class="summary-grid" id="summaryGrid">
-            <!-- Cards injected via JS -->
+
         </section>
 
-        <!-- Main Content Layout -->
+
         <div class="content-layout">
-            <!-- List Section -->
+
             <div class="list-section">
                 <div class="toolbar">
                     <div class="input-group">
@@ -800,23 +772,19 @@
                 </div>
 
                 <div class="asset-list" id="assetList">
-                    <!-- List injected via JS -->
+
                 </div>
             </div>
 
-            <!-- Detail Panel -->
+
             <aside class="detail-panel" id="detailPanel">
-                <!-- Details injected via JS -->
+
             </aside>
         </div>
     </main>
 
     <script>
-        /**
-         * MINI OPERATIONS DASHBOARD
-         * Original Dataset Provided by Assignment.
-         * Note: The dataset remains exactly as requested. No extra fields were added.
-         */
+
         const assets = [
             { id: "FD_FAN_01", name: "FD Fan 01", area: "Boiler House", health: 86, status: "Healthy", severity: "LOW", temperature: 68, vibration: 2.1, pressure: 1.8, runtimeHours: 1240, lastUpdated: "2026-06-19 08:30" },
             { id: "CW_PUMP_02", name: "Cooling Water Pump 02", area: "Utility", health: 62, status: "Watch", severity: "MEDIUM", temperature: 74, vibration: 4.8, pressure: 2.4, runtimeHours: 980, lastUpdated: "2026-06-19 08:25" },
@@ -832,10 +800,7 @@
             { id: "SCRUBBER_12", name: "Emission Scrubber 12", area: "Environment Control", health: 84, status: "Healthy", severity: "LOW", temperature: 69, vibration: 2.4, pressure: 3.3, runtimeHours: 890, lastUpdated: "2026-06-19 08:32" }
         ];
 
-        /**
-         * DYNAMIC ENHANCEMENTS STATE
-         * We maintain trends in a separate map to preserve the original dataset as requested.
-         */
+
         const trendMap = {
             "FD_FAN_01": "Stable", "CW_PUMP_02": "Declining", "AIR_COMP_03": "Declining",
             "BOILER_FEED_04": "Improving", "CHILLER_05": "Stable", "CONVEYOR_06": "Declining",
@@ -843,9 +808,7 @@
             "PRESS_10": "Stable", "MIXER_11": "Improving", "SCRUBBER_12": "Stable"
         };
 
-        /**
-         * GLOBAL STATE
-         */
+
         const state = {
             allAssets: [...assets],
             filteredAssets: [...assets],
@@ -853,19 +816,12 @@
             filterSeverity: 'All',
             sortOrder: 'none',
             selectedAssetId: localStorage.getItem('mod_selected_asset') || null,
-            // ============================================================
-            // OLD IMPLEMENTATION
-            // Reason: Reverted to light theme as default per user request
-            // Date: 2026-06-22
-            // ============================================================
-            // theme: localStorage.getItem('mod_theme') || 'dark',
+
             theme: localStorage.getItem('mod_theme') || 'light',
             lastRefreshed: new Date()
         };
 
-        /**
-         * DOM ELEMENTS
-         */
+
         const elements = {
             themeToggleBtn: document.getElementById('themeToggleBtn'),
             themeIcon: document.getElementById('themeIcon'),
@@ -880,33 +836,14 @@
             loadingOverlay: document.getElementById('loadingOverlay')
         };
 
-        /**
-         * HELPERS
-         */
+
         const getStatusClass = (health) => {
             if (health >= 75) return 'healthy';
             if (health >= 50) return 'warning';
             return 'alarm';
         };
 
-        // ============================================================
-        // OLD IMPLEMENTATION
-        // Reason: UI/UX Refinement - Premium SVG icons for recommendations and trends
-        // Date: 2026-06-21
-        // ============================================================
-        /*
-        const getRecommendation = (health) => {
-            if (health >= 75) return { text: "Asset is operating normally.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>` };
-            if (health >= 50) return { text: "Monitor this asset closely.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>` };
-            return { text: "Immediate inspection recommended.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>` };
-        };
 
-        const getTrendIcon = (trend) => {
-            if (trend === "Improving") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`;
-            if (trend === "Declining") return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`;
-            return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-        };
-        */
         const getRecommendation = (health) => {
             if (health >= 75) return { text: "Asset is operating normally.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>` };
             if (health >= 50) return { text: "Monitor this asset closely.", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>` };
@@ -925,9 +862,7 @@
 
         const safeVal = (val, unit = "") => val !== undefined && val !== null ? `${val}${unit}` : "N/A";
 
-        /**
-         * CORE LOGIC
-         */
+
         const computeSummaries = (data) => {
             const total = data.length;
             let healthy = 0, warning = 0, alarm = 0, healthSum = 0;
@@ -946,7 +881,7 @@
         const applyFiltersAndSort = () => {
             let result = [...state.allAssets];
 
-            // 1. Search Filter
+
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
                 result = result.filter(a =>
@@ -955,12 +890,12 @@
                 );
             }
 
-            // 2. Severity Filter
+
             if (state.filterSeverity !== 'All') {
                 result = result.filter(a => a.severity.toUpperCase() === state.filterSeverity.toUpperCase());
             }
 
-            // 3. Sort
+
             if (state.sortOrder === 'asc') {
                 result.sort((a, b) => a.health - b.health);
             } else if (state.sortOrder === 'desc') {
@@ -971,45 +906,11 @@
             renderApp();
         };
 
-        /**
-         * RENDERING
-         */
-        // ============================================================
-        // OLD IMPLEMENTATION
-        // Reason: UI/UX Refinement - Premium SVGs, better card spacing/typography
-        // Date: 2026-06-21
-        // ============================================================
-        /*
+
+
         const renderSummaryCards = () => {
             const stats = computeSummaries(state.allAssets);
 
-            elements.summaryGrid.innerHTML = `
-                <div class="summary-card">
-                    <div class="summary-title">Total Assets <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-                    <div class="summary-value">${stats.total}</div>
-                </div>
-                <div class="summary-card" style="border-bottom: 3px solid var(--status-healthy)">
-                    <div class="summary-title">Healthy <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-healthy)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-                    <div class="summary-value">${stats.healthy}</div>
-                </div>
-                <div class="summary-card" style="border-bottom: 3px solid var(--status-warning)">
-                    <div class="summary-title">Warning <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-                    <div class="summary-value">${stats.warning}</div>
-                </div>
-                <div class="summary-card" style="border-bottom: 3px solid var(--status-alarm)">
-                    <div class="summary-title">Alarm <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--status-alarm)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-                    <div class="summary-value">${stats.alarm}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-title">Avg Health <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-                    <div class="summary-value">${stats.avgHealth}%</div>
-                </div>
-            `;
-        };
-        */
-        const renderSummaryCards = () => {
-            const stats = computeSummaries(state.allAssets); 
-            
             elements.summaryGrid.innerHTML = `
                 <div class="summary-card fade-in" style="border-left: 4px solid var(--primary-accent)">
                     <div class="summary-title">Total Assets <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
@@ -1039,77 +940,7 @@
             `;
         };
 
-        // ============================================================
-        // OLD IMPLEMENTATION
-        // Reason: UI/UX Refinement - Better spacing, inline icons, hierarchy, empty state
-        // Date: 2026-06-21
-        // ============================================================
-        /*
-        const renderAssetList = () => {
-            if (state.filteredAssets.length === 0) {
-                elements.assetList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="input-wrapper">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="searchInput" placeholder="Search by name or ID..." style="padding-left: 2.5rem; border-radius: var(--radius-lg);">
-                        </div>
-                        <h3>No Assets Found</h3>
-                        <p>No assets match the current search or filter criteria.</p>
-                    </div>
-                `;
-                return;
-            }
 
-            const fragment = document.createDocumentFragment();
-
-            state.filteredAssets.forEach(asset => {
-                const statusClass = getStatusClass(asset.health);
-                const trend = trendMap[asset.id] || "Stable";
-                const isSelected = state.selectedAssetId === asset.id;
-
-                const card = document.createElement('div');
-                card.className = \`asset-card \${isSelected ? 'selected' : ''}\`;
-                card.onclick = () => selectAsset(asset.id);
-
-                card.innerHTML = \`
-                    <div class="asset-info">
-                        <div class="asset-name">\${asset.name}</div>
-                        <div class="asset-meta">
-                            <span>\${asset.id}</span> • <span>\${asset.area}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="health-bar-container">
-                        <div class="health-label">
-                            <span>Health</span>
-                            <span style="color: var(--status-\${statusClass})">\${asset.health}%</span>
-                        </div>
-                        <div class="health-bar-bg">
-                            <div class="health-bar-fill" style="width: \${asset.health}%; background-color: var(--status-\${statusClass})"></div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <span class="badge \${statusClass}">\${asset.status}</span>
-                        <div class="trend-indicator trend-\${trend.toLowerCase()}">
-                            \${getTrendIcon(trend)} \${trend}
-                        </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end; text-align: right;">
-                        <span class="badge" style="background-color: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--border-color);">
-                            \${asset.severity} SEV
-                        </span>
-                        <span class="asset-meta">\${asset.lastUpdated}</span>
-                    </div>
-                \`;
-                fragment.appendChild(card);
-            });
-
-            elements.assetList.innerHTML = '';
-            elements.assetList.appendChild(fragment);
-        };
-        */
         const renderAssetList = () => {
             if (state.filteredAssets.length === 0) {
                 elements.assetList.innerHTML = `
@@ -1184,88 +1015,7 @@
             elements.assetList.appendChild(fragment);
         };
 
-        // ============================================================
-        // OLD IMPLEMENTATION
-        // Reason: UI/UX Refinement - More prominent health score, better grid, icons, placeholder
-        // Date: 2026-06-21
-        // ============================================================
-        /*
-        const renderDetailPanel = () => {
-            if (!state.selectedAssetId) {
-                elements.detailPanel.innerHTML = `
-                    <div class="placeholder-detail">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        <h3>Select an Asset</h3>
-                        <p>Click on an asset from the list to view telemetry and diagnostics.</p>
-                    </div>
-                `;
-                return;
-            }
 
-            const asset = state.allAssets.find(a => a.id === state.selectedAssetId);
-
-            if (!asset) {
-                state.selectedAssetId = null;
-                renderDetailPanel();
-                return;
-            }
-
-            const statusClass = getStatusClass(asset.health);
-            const rec = getRecommendation(asset.health);
-
-            elements.detailPanel.innerHTML = `
-                <div class="detail-header">
-                    <div class="detail-title">
-                        <h2>\${safeVal(asset.name)}</h2>
-                        <span style="font-size: 0.875rem; color: var(--text-secondary);">\${safeVal(asset.id)} • \${safeVal(asset.area)}</span>
-                    </div>
-                    <span class="badge \${statusClass}" style="font-size: 0.875rem;">\${safeVal(asset.status)}</span>
-                </div>
-
-                <div class="health-bar-container" style="padding: 1rem; background-color: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <div class="health-label" style="font-size: 1rem; margin-bottom: 0.5rem;">
-                        <span>System Health Score</span>
-                        <span style="color: var(--status-\${statusClass}); font-weight: 700;">\${safeVal(asset.health)} / 100</span>
-                    </div>
-                    <div class="health-bar-bg" style="height: 8px;">
-                        <div class="health-bar-fill" style="width: \${asset.health}%; background-color: var(--status-\${statusClass})"></div>
-                    </div>
-                </div>
-
-                <div class="recommendation-box \${statusClass}" style="background-color: var(--status-\${statusClass}-bg); color: var(--status-\${statusClass}); border: 1px solid var(--status-\${statusClass});">
-                    \${rec.icon}
-                    <span><strong>Diagnostic:</strong> \${rec.text}</span>
-                </div>
-
-                <div class="detail-grid">
-                    <div class="data-point">
-                        <span class="data-label">Severity Level</span>
-                        <span class="data-value">\${safeVal(asset.severity)}</span>
-                    </div>
-                    <div class="data-point">
-                        <span class="data-label">Temperature</span>
-                        <span class="data-value">\${safeVal(asset.temperature)} <span class="data-unit">°C</span></span>
-                    </div>
-                    <div class="data-point">
-                        <span class="data-label">Vibration</span>
-                        <span class="data-value">\${safeVal(asset.vibration)} <span class="data-unit">mm/s</span></span>
-                    </div>
-                    <div class="data-point">
-                        <span class="data-label">Pressure</span>
-                        <span class="data-value">\${safeVal(asset.pressure)} <span class="data-unit">PSI</span></span>
-                    </div>
-                    <div class="data-point">
-                        <span class="data-label">Runtime</span>
-                        <span class="data-value">\${safeVal(asset.runtimeHours)} <span class="data-unit">hrs</span></span>
-                    </div>
-                    <div class="data-point">
-                        <span class="data-label">Last Updated</span>
-                        <span class="data-value" style="font-size: 0.875rem; font-weight: 500;">\${safeVal(asset.lastUpdated)}</span>
-                    </div>
-                </div>
-            `;
-        };
-        */
         const renderDetailPanel = () => {
             if (!state.selectedAssetId) {
                 elements.detailPanel.innerHTML = `
@@ -1361,9 +1111,7 @@
             renderDetailPanel();
         };
 
-        /**
-         * ACTIONS & HANDLERS
-         */
+
         const selectAsset = (id) => {
             state.selectedAssetId = id;
             localStorage.setItem('mod_selected_asset', id);
@@ -1414,7 +1162,7 @@
             elements.loadingOverlay.classList.add('active');
             const refreshIcon = elements.refreshBtn.querySelector('svg');
             if (refreshIcon) refreshIcon.classList.add('spinning-icon');
-            
+
             setTimeout(() => {
                 state.lastRefreshed = new Date();
                 elements.lastRefreshedTime.textContent = formatTime(state.lastRefreshed);
@@ -1424,29 +1172,26 @@
             }, 800);
         };
 
-        /**
-         * INIT
-         */
+
         const init = () => {
             applyTheme(state.theme);
             elements.lastRefreshedTime.textContent = formatTime(state.lastRefreshed);
 
-            // Bind listeners
+
             elements.searchInput.addEventListener('input', handleSearch);
             elements.severityFilter.addEventListener('change', handleFilter);
             elements.healthSort.addEventListener('change', handleSort);
             elements.themeToggleBtn.addEventListener('click', toggleTheme);
             elements.refreshBtn.addEventListener('click', refreshData);
 
-            // Initial Render
+
             applyFiltersAndSort();
         };
 
-        // Boot
+
         document.addEventListener('DOMContentLoaded', init);
 
     </script>
-
     <!--
     ================================================================================
     README DOCUMENTATION
@@ -1482,6 +1227,7 @@
     
     ================================================================================
     -->
+
 </body>
 
 </html>
