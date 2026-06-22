@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operations Dashboard</title>
+    <title>Mini Operations Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SVG Icons are inline to avoid external dependencies -->
     <style>
@@ -666,7 +666,14 @@
     </style>
 </head>
 
+<!-- ============================================================
+   OLD IMPLEMENTATION
+   Reason: Reverted to light theme as default per user request
+   Date: 2026-06-22
+============================================================ 
 <body data-theme="dark">
+-->
+<body data-theme="light">
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -846,7 +853,13 @@
             filterSeverity: 'All',
             sortOrder: 'none',
             selectedAssetId: localStorage.getItem('mod_selected_asset') || null,
-            theme: localStorage.getItem('mod_theme') || 'dark',
+            // ============================================================
+            // OLD IMPLEMENTATION
+            // Reason: Reverted to light theme as default per user request
+            // Date: 2026-06-22
+            // ============================================================
+            // theme: localStorage.getItem('mod_theme') || 'dark',
+            theme: localStorage.getItem('mod_theme') || 'light',
             lastRefreshed: new Date()
         };
 
